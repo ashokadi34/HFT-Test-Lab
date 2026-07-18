@@ -3,7 +3,7 @@ package com.ashok.hft.controller;
 import com.ashok.hft.entity.Order;
 import com.ashok.hft.service.OrderService;
 import org.springframework.web.bind.annotation.*;
-
+import jakarta.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -17,7 +17,7 @@ public class OrderController {
     }
 
     @PostMapping
-    public Order create(@RequestBody Order order) {
+    public Order create(@Valid @RequestBody Order order) {
         return service.createOrder(order);
     }
 

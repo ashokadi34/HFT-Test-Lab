@@ -1,6 +1,10 @@
 package com.ashok.hft.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -11,20 +15,28 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "Symbol cannot be empty")
     private String symbol;
 
-    private String side;
-
-    private Integer quantity;
-
+    @NotNull(message = "Price is required")
+    @Positive(message = "Price must be greater than 0")
     private Double price;
 
+    @NotNull(message = "Quantity is required")
+    @Positive(message = "Quantity must be greater than 0")
+    private Integer quantity;
+
+    @NotBlank(message = "Side cannot be empty")
+    private String side;
+
+    @NotBlank(message = "Status cannot be empty")
     private String status;
 
-    private LocalDateTime createdTime;
+    private LocalDateTime createdTime = LocalDateTime.now();
 
     public Order() {
     }
+
 
     public Long getId() {
         return id;

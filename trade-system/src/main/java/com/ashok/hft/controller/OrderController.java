@@ -1,9 +1,11 @@
 package com.ashok.hft.controller;
 
-import com.ashok.hft.entity.Order;
+import com.ashok.hft.dto.OrderRequest;
+import com.ashok.hft.dto.OrderResponse;
 import com.ashok.hft.service.OrderService;
-import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
@@ -17,12 +19,12 @@ public class OrderController {
     }
 
     @PostMapping
-    public Order create(@Valid @RequestBody Order order) {
-        return service.createOrder(order);
+    public OrderResponse create(@Valid @RequestBody OrderRequest request) {
+        return service.createOrder(request);
     }
 
     @GetMapping
-    public List<Order> getAllOrders() {
+    public List<OrderResponse> getAllOrders() {
         return service.getOrders();
     }
 }

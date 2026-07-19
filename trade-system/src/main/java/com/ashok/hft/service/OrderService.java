@@ -1,6 +1,7 @@
 package com.ashok.hft.service;
 
 import com.ashok.hft.entity.Order;
+import com.ashok.hft.enums.OrderStatus;
 import com.ashok.hft.repository.OrderRepository;
 import org.springframework.stereotype.Service;
 
@@ -18,7 +19,7 @@ public class OrderService {
 
     public Order createOrder(Order order) {
 
-        order.setStatus("NEW");
+        order.setStatus(OrderStatus.NEW);
         order.setCreatedTime(LocalDateTime.now());
 
         return repository.save(order);

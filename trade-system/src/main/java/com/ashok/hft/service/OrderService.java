@@ -18,25 +18,26 @@ public class OrderService {
 
     private final OrderRepository repository;
     private final ModelMapper modelMapper;
-    private final OrderValidator validator;
-    //Adding OrderValidator
+    private final OrderProcessorService processor;
+
     public OrderService(OrderRepository repository,
-                        ModelMapper modelMapper, OrderValidator validator) {
+                        ModelMapper modelMapper,
+                        OrderProcessorService processor) {
+
         this.repository = repository;
         this.modelMapper = modelMapper;
-        this.validator = validator;
+        this.processor = processor;
     }
 
     public OrderResponse createOrder(OrderRequest request) {
 
-        validator.validate(request);
+       // validator.validate(request);
         Order order = modelMapper.map(request, Order.class);
 
         order.setStatus(OrderStatus.NEW);
         order.setCreatedTime(LocalDateTime.now());
-
+        processor.process(order);
         Order saved = repository.save(order);
-
         return modelMapper.map(saved, OrderResponse.class);
     }
 

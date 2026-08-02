@@ -9,9 +9,16 @@ import java.util.Set;
 @Service
 public class OrderProcessorService {
 
-    /*
-     * Supported exchange symbols
-     */
+    private final OrderStatusService statusService;
+    private final ExchangeSimulatorService exchangeSimulatorService;
+
+    public OrderProcessorService(OrderStatusService statusService,
+                                 ExchangeSimulatorService exchangeSimulatorService) {
+
+        this.statusService = statusService;
+        this.exchangeSimulatorService = exchangeSimulatorService;
+    }
+
     private static final Set<String> VALID_SYMBOLS = Set.of(
             "INFY",
             "TCS",
@@ -28,36 +35,31 @@ public class OrderProcessorService {
 
     public void process(Order order) {
 
-        /*
-         * Validate symbol
-         */
+        statusService.updateStatus(order, OrderStatus.VALIDATING);
+
         String symbol = order.getSymbol().trim().toUpperCase();
+
         if (!VALID_SYMBOLS.contains(symbol)) {
-            order.setStatus(OrderStatus.REJECTED);
+
+            statusService.updateStatus(order, OrderStatus.REJECTED);
             return;
         }
 
-        /*
-         * Validate price
-         */
         if (order.getPrice() <= 0) {
 
-            order.setStatus(OrderStatus.REJECTED);
+            statusService.updateStatus(order, OrderStatus.REJECTED);
             return;
         }
 
-        /*
-         * Validate quantity
-         */
         if (order.getQuantity() <= 0) {
 
-            order.setStatus(OrderStatus.REJECTED);
+            statusService.updateStatus(order, OrderStatus.REJECTED);
             return;
         }
 
-        /*
-         * Order accepted
-         */
-        order.setStatus(OrderStatus.ACCEPTED);
+        statusService.updateStatus(order, OrderStatus.ACCEPTED);
+
+        exchangeSimulatorService.send(order);
+
     }
 }

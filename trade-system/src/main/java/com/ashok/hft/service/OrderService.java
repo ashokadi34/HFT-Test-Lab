@@ -5,7 +5,6 @@ import com.ashok.hft.dto.OrderResponse;
 import com.ashok.hft.entity.Order;
 import com.ashok.hft.enums.OrderStatus;
 import com.ashok.hft.repository.OrderRepository;
-import com.ashok.hft.validator.OrderValidator;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
@@ -31,13 +30,16 @@ public class OrderService {
 
     public OrderResponse createOrder(OrderRequest request) {
 
-       // validator.validate(request);
         Order order = modelMapper.map(request, Order.class);
 
-        order.setStatus(OrderStatus.NEW);
         order.setCreatedTime(LocalDateTime.now());
-        processor.process(order);
+        order.setStatus(OrderStatus.NEW);
+
         Order saved = repository.save(order);
+
+        // Start processing
+        processor.process(saved);
+
         return modelMapper.map(saved, OrderResponse.class);
     }
 

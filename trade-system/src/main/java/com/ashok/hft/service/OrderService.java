@@ -19,6 +19,7 @@ public class OrderService {
     private final OrderRepository repository;
     private final ModelMapper modelMapper;
     private final OrderValidator validator;
+    //Adding OrderValidator
     public OrderService(OrderRepository repository,
                         ModelMapper modelMapper, OrderValidator validator) {
         this.repository = repository;

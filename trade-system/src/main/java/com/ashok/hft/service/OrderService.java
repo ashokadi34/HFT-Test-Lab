@@ -18,14 +18,17 @@ public class OrderService {
     private final OrderRepository repository;
     private final ModelMapper modelMapper;
     private final OrderProcessorService processor;
+    private final OrderStatusService statusService;
 
     public OrderService(OrderRepository repository,
                         ModelMapper modelMapper,
-                        OrderProcessorService processor) {
+                        OrderProcessorService processor,
+                        OrderStatusService statusService) {
 
         this.repository = repository;
         this.modelMapper = modelMapper;
         this.processor = processor;
+        this.statusService = statusService;
     }
 
     public OrderResponse createOrder(OrderRequest request) {
@@ -33,13 +36,11 @@ public class OrderService {
         Order order = modelMapper.map(request, Order.class);
 
         order.setCreatedTime(LocalDateTime.now());
-        order.setStatus(OrderStatus.NEW);
 
         Order saved = repository.save(order);
-
+        statusService.updateStatus(saved, OrderStatus.NEW);
         // Start processing
         processor.process(saved);
-
         return modelMapper.map(saved, OrderResponse.class);
     }
 

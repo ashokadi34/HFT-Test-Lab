@@ -8,8 +8,25 @@ import java.util.List;
 
 public interface OrderRepository extends JpaRepository<Order, Long> {
 
-    List<Order> findByStatusOrderByCreatedTimeDesc(OrderStatus status);
+    /*
+     * Existing order filtering
+     */
 
-    List<Order> findBySymbolIgnoreCaseOrderByCreatedTimeDesc(String symbol);
+    List<Order> findByStatusOrderByCreatedTimeDesc(
+            OrderStatus status
+    );
 
+    List<Order> findBySymbolIgnoreCaseOrderByCreatedTimeDesc(
+            String symbol
+    );
+
+    /*
+     * Order Book aggregation
+     *
+     * Returns active orders for a symbol.
+     */
+    List<Order> findBySymbolIgnoreCaseAndStatusIn(
+            String symbol,
+            List<OrderStatus> statuses
+    );
 }

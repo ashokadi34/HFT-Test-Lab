@@ -30,6 +30,8 @@ public class OrderProcessorService {
             "LT",
             "AAPL",
             "ASUS",
+            "MSFT",
+            "DJI",
             "GOOGLE"
     );
 

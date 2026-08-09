@@ -1,6 +1,7 @@
 package com.ashok.hft.repository;
 
 import com.ashok.hft.entity.Order;
+import com.ashok.hft.enums.OrderSide;
 import com.ashok.hft.enums.OrderStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -29,4 +30,18 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             String symbol,
             List<OrderStatus> statuses
     );
+
+    List<Order> findBySymbolIgnoreCaseAndSideAndStatusInOrderByPriceAscCreatedTimeAsc(
+            String symbol,
+            OrderSide side,
+            List<OrderStatus> statuses
+    );
+
+    List<Order> findBySymbolIgnoreCaseAndSideAndStatusInOrderByPriceDescCreatedTimeAsc(
+            String symbol,
+            OrderSide side,
+            List<OrderStatus> statuses
+    );
+
+
 }

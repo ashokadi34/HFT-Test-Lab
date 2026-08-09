@@ -34,12 +34,13 @@ public class OrderService {
     public OrderResponse createOrder(OrderRequest request) {
 
         Order order = modelMapper.map(request, Order.class);
-
+        // Normalize symbol before persistence
+        order.setSymbol(
+                order.getSymbol().trim().toUpperCase()
+        );
         order.setCreatedTime(LocalDateTime.now());
-
         Order saved = repository.save(order);
         statusService.updateStatus(saved, OrderStatus.NEW);
-        // Start processing
         processor.process(saved);
         return modelMapper.map(saved, OrderResponse.class);
     }

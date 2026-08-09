@@ -1,13 +1,19 @@
 package com.ashok.hft.entity;
 
-import jakarta.persistence.*;
+import com.ashok.hft.enums.OrderSide;
+import com.ashok.hft.enums.OrderStatus;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import com.ashok.hft.enums.OrderSide;
-import com.ashok.hft.enums.OrderStatus;
+import jakarta.validation.constraints.PositiveOrZero;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -26,7 +32,7 @@ public class Order {
     private Double price;
 
     @NotNull(message = "Quantity is required")
-    @Positive(message = "Quantity must be greater than zero")
+    @PositiveOrZero(message = "Quantity cannot be negative")
     private Integer quantity;
 
     @NotNull(message = "Order side is required")
@@ -40,7 +46,6 @@ public class Order {
 
     public Order() {
     }
-
 
     public Long getId() {
         return id;
@@ -57,9 +62,11 @@ public class Order {
     public void setSymbol(String symbol) {
         this.symbol = symbol;
     }
+
     public Integer getQuantity() {
         return quantity;
     }
+
     public void setQuantity(Integer quantity) {
         this.quantity = quantity;
     }
@@ -71,6 +78,7 @@ public class Order {
     public void setPrice(Double price) {
         this.price = price;
     }
+
     public OrderSide getSide() {
         return side;
     }

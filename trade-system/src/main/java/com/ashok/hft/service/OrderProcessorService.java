@@ -41,20 +41,20 @@ public class OrderProcessorService {
 
         String symbol = order.getSymbol().trim().toUpperCase();
 
-        if (!VALID_SYMBOLS.contains(symbol)) {
+        // Normalize the actual entity value
+        order.setSymbol(symbol);
 
+        if (!VALID_SYMBOLS.contains(symbol)) {
             statusService.updateStatus(order, OrderStatus.REJECTED);
             return;
         }
 
         if (order.getPrice() <= 0) {
-
             statusService.updateStatus(order, OrderStatus.REJECTED);
             return;
         }
 
         if (order.getQuantity() <= 0) {
-
             statusService.updateStatus(order, OrderStatus.REJECTED);
             return;
         }
@@ -62,6 +62,5 @@ public class OrderProcessorService {
         statusService.updateStatus(order, OrderStatus.ACCEPTED);
 
         exchangeSimulatorService.send(order);
-
     }
 }

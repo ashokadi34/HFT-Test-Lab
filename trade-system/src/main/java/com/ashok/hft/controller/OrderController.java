@@ -2,6 +2,7 @@ package com.ashok.hft.controller;
 
 import com.ashok.hft.dto.OrderRequest;
 import com.ashok.hft.dto.OrderResponse;
+import com.ashok.hft.enums.OrderStatus;
 import com.ashok.hft.service.OrderService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
@@ -24,7 +25,10 @@ public class OrderController {
     }
 
     @GetMapping
-    public List<OrderResponse> getAllOrders() {
-        return service.getOrders();
+    public List<OrderResponse> getOrders(
+            @RequestParam(required = false) OrderStatus status,
+            @RequestParam(required = false) String symbol) {
+
+        return service.getOrders(status, symbol);
     }
 }

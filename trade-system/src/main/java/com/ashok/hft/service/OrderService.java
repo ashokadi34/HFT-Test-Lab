@@ -44,10 +44,24 @@ public class OrderService {
         return modelMapper.map(saved, OrderResponse.class);
     }
 
-    public List<OrderResponse> getOrders() {
+    public List<OrderResponse> getOrders(OrderStatus status, String symbol) {
 
-        return repository.findAll()
-                .stream()
+        List<Order> orders;
+
+        if (status != null) {
+
+            orders = repository.findByStatusOrderByCreatedTimeDesc(status);
+
+        } else if (symbol != null && !symbol.isBlank()) {
+
+            orders = repository.findBySymbolIgnoreCaseOrderByCreatedTimeDesc(symbol);
+
+        } else {
+
+            orders = repository.findAll();
+        }
+
+        return orders.stream()
                 .map(order -> modelMapper.map(order, OrderResponse.class))
                 .collect(Collectors.toList());
     }

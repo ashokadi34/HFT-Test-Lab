@@ -37,29 +37,50 @@ public class OrderProcessorService {
 
     public void process(Order order) {
 
-        statusService.updateStatus(order, OrderStatus.VALIDATING);
+        statusService.updateStatus(
+                order,
+                OrderStatus.VALIDATING
+        );
 
         String symbol = order.getSymbol().trim().toUpperCase();
 
-        // Normalize the actual entity value
+        // Normalize symbol before further processing
         order.setSymbol(symbol);
 
         if (!VALID_SYMBOLS.contains(symbol)) {
-            statusService.updateStatus(order, OrderStatus.REJECTED);
+
+            statusService.updateStatus(
+                    order,
+                    OrderStatus.REJECTED
+            );
+
             return;
         }
 
-        if (order.getPrice() <= 0) {
-            statusService.updateStatus(order, OrderStatus.REJECTED);
+        if (order.getPrice() == null || order.getPrice() <= 0) {
+
+            statusService.updateStatus(
+                    order,
+                    OrderStatus.REJECTED
+            );
+
             return;
         }
 
-        if (order.getQuantity() <= 0) {
-            statusService.updateStatus(order, OrderStatus.REJECTED);
+        if (order.getQuantity() == null || order.getQuantity() <= 0) {
+
+            statusService.updateStatus(
+                    order,
+                    OrderStatus.REJECTED
+            );
+
             return;
         }
 
-        statusService.updateStatus(order, OrderStatus.ACCEPTED);
+        statusService.updateStatus(
+                order,
+                OrderStatus.ACCEPTED
+        );
 
         exchangeSimulatorService.send(order);
     }

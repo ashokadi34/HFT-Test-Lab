@@ -11,7 +11,7 @@ public class OrderRequest {
     private String symbol;
 
     @NotNull(message = "Price is required")
-    @Min(value = 1, message = "Price must be greater than zero")
+    @Positive(message = "Price must be greater than zero")
     private Double price;
 
     @NotNull(message = "Quantity is required")

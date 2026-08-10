@@ -174,7 +174,7 @@ HFT-Test-Lab
 
 | Category | Technology |
 |----------|------------|
-| Language | Java 22 |
+| Language | Java 21 |
 | Framework | Spring Boot |
 | Build Tool | Maven |
 | Database | PostgreSQL |
@@ -276,8 +276,8 @@ HFT-Test-Lab
 
 | Sprint | Status |
 |---------|--------|
-| Sprint 0 | ✅ Completed |
-| Sprint 1 | 🚧 Starting |
+| Sprint 6 | ✅ Completed |
+| Sprint 7 | 🚧 Starting |
 
 ---
 

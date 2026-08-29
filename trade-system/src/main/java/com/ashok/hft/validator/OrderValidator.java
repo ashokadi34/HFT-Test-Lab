@@ -14,9 +14,14 @@ public class OrderValidator {
             "RELIANCE",
             "SBIN",
             "HDFCBANK",
+            "ICICIBANK",
             "WIPRO",
+            "LT",
             "AAPL",
-            "ASUS"
+            "ASUS",
+            "MSFT",
+            "DJI",
+            "GOOGLE"
     );
 
     public void validate(OrderRequest request) {

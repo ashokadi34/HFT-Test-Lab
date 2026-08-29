@@ -7,7 +7,6 @@ import com.ashok.hft.enums.OrderStatus;
 import com.ashok.hft.repository.OrderRepository;
 import com.ashok.hft.repository.TradeRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -16,13 +15,16 @@ public class MatchingEngineService {
 
     private final OrderRepository orderRepository;
     private final TradeRepository tradeRepository;
+    private final OrderStatusService statusService;
 
     public MatchingEngineService(
             OrderRepository orderRepository,
-            TradeRepository tradeRepository) {
+            TradeRepository tradeRepository,
+            OrderStatusService statusService) {
 
         this.orderRepository = orderRepository;
         this.tradeRepository = tradeRepository;
+        this.statusService = statusService;
     }
 
     public List<Order> findMatchingOrders(Order incomingOrder) {
@@ -145,7 +147,7 @@ public class MatchingEngineService {
         }
     }
 
-    @Transactional
+
     public Trade executeMatch(
             Order incomingOrder,
             Order oppositeOrder) {
@@ -170,9 +172,9 @@ public class MatchingEngineService {
                         oppositeOrder,
                         matchQuantity
                 );
-
+        // Persist trade
         tradeRepository.save(trade);
-
+        // Update remaining quantities and statuses
         updateOrderAfterTrade(
                 incomingOrder,
                 matchQuantity
@@ -183,8 +185,20 @@ public class MatchingEngineService {
                 matchQuantity
         );
 
+// Persist updated orders
         orderRepository.save(incomingOrder);
         orderRepository.save(oppositeOrder);
+
+// Persist status changes + audit history
+        statusService.updateStatus(
+                incomingOrder,
+                incomingOrder.getStatus()
+        );
+
+        statusService.updateStatus(
+                oppositeOrder,
+                oppositeOrder.getStatus()
+        );
 
         return trade;
     }

@@ -4,6 +4,7 @@ import com.ashok.hft.entity.Order;
 import com.ashok.hft.entity.Trade;
 import com.ashok.hft.enums.OrderStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -21,6 +22,7 @@ public class ExchangeSimulatorService {
         this.matchingEngineService = matchingEngineService;
     }
 
+    @Transactional
     public void send(Order order) {
 
         statusService.updateStatus(
@@ -33,8 +35,6 @@ public class ExchangeSimulatorService {
 
         if (matchingOrders.isEmpty()) {
 
-            // No counter-order available.
-            // Keep the order active in the book.
             statusService.updateStatus(
                     order,
                     OrderStatus.ACCEPTED
@@ -45,7 +45,6 @@ public class ExchangeSimulatorService {
 
         for (Order oppositeOrder : matchingOrders) {
 
-            // Stop if incoming order has already been completely filled.
             if (order.getQuantity() <= 0) {
                 break;
             }
@@ -66,20 +65,8 @@ public class ExchangeSimulatorService {
             if (trade == null) {
                 continue;
             }
-
-            // Record the resulting order status.
-            statusService.updateStatus(
-                    order,
-                    order.getStatus()
-            );
-
-            statusService.updateStatus(
-                    oppositeOrder,
-                    oppositeOrder.getStatus()
-            );
         }
 
-        // If nothing matched, keep order active.
         if (order.getQuantity() > 0
                 && order.getStatus() != OrderStatus.PARTIALLY_FILLED) {
 

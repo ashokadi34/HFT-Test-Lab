@@ -1,0 +1,20 @@
+[
+  {
+    "symbol": "INFY",
+    "price": 1800.0,
+    "quantity": 10,
+    "side": "BUY"
+  },
+  {
+    "symbol": "TCS",
+    "price": 4200.0,
+    "quantity": 20,
+    "side": "BUY"
+  },
+  {
+    "symbol": "RELIANCE",
+    "price": 3000.0,
+    "quantity": 5,
+    "side": "SELL"
+  }
+]

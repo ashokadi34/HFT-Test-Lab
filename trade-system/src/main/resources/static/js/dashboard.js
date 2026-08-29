@@ -1216,6 +1216,10 @@ function escapeHtml(value) {
 // LIGHTWEIGHT STATUS CHART
 // =========================================
 
+/* =========================================
+   DYNAMIC STATUS CHART
+   ========================================= */
+
 function updateStatusChart(
     filled,
     active,
@@ -1223,16 +1227,36 @@ function updateStatusChart(
     partial
 ) {
 
+    /*
+     * Get chart elements
+     */
+
     const chart =
-        document.getElementById(
-            "statusChart"
-        );
+        document.getElementById("statusChart");
+
+    const chartTotal =
+        document.getElementById("chartTotal");
+
+    const filledElement =
+        document.getElementById("filledAnalytics");
+
+    const activeElement =
+        document.getElementById("activeAnalytics");
+
+    const rejectedElement =
+        document.getElementById("rejectedAnalytics");
 
 
-    if (!chart) {
-        return;
-    }
-
+    /*
+     * Total orders
+     *
+     * Active already includes:
+     * NEW
+     * VALIDATING
+     * ACCEPTED
+     * SENT_TO_EXCHANGE
+     * PARTIALLY_FILLED
+     */
 
     const total =
         filled +
@@ -1240,14 +1264,81 @@ function updateStatusChart(
         rejected;
 
 
+    /*
+     * Update center value
+     */
+
+    if (chartTotal) {
+
+        chartTotal.textContent =
+            `${total} Orders`;
+
+    }
+
+
+    /*
+     * Update analytics values
+     */
+
+    if (filledElement) {
+
+        filledElement.textContent =
+            `${filled} (${getPercentage(filled, total)}%)`;
+
+    }
+
+
+    if (activeElement) {
+
+        activeElement.textContent =
+            `${active} (${getPercentage(active, total)}%)`;
+
+    }
+
+
+    if (rejectedElement) {
+
+        rejectedElement.textContent =
+            `${rejected} (${getPercentage(rejected, total)}%)`;
+
+    }
+
+
+    /*
+     * Chart not available
+     */
+
+    if (!chart) {
+
+        console.warn(
+            "Status chart element not found"
+        );
+
+        return;
+
+    }
+
+
+    /*
+     * Empty dataset
+     */
+
     if (total === 0) {
 
         chart.style.background =
-            "none";
+            "#334155";
+
+        chart.title =
+            "No orders available";
 
         return;
+
     }
 
+
+    /*
+     * Calculate percentages
+     */
 
     const filledPercent =
         (filled / total) * 100;
@@ -1255,21 +1346,56 @@ function updateStatusChart(
     const activePercent =
         (active / total) * 100;
 
-
     const rejectedPercent =
         (rejected / total) * 100;
 
 
+    /*
+     * Dynamic donut chart
+     */
+
     chart.style.background = `
         conic-gradient(
-            #22c55e 0% ${filledPercent}%,
-            #3b82f6 ${filledPercent}%
-                ${filledPercent + activePercent}%,
-            #ef4444 ${filledPercent + activePercent}%
-                100%
+            #22c55e
+            0%
+            ${filledPercent}%,
+
+            #3b82f6
+            ${filledPercent}%
+            ${filledPercent + activePercent}%,
+
+            #ef4444
+            ${filledPercent + activePercent}%
+            100%
         )
     `;
 
+
+    /*
+     * Hover tooltip
+     */
+
+    chart.title =
+        `Filled: ${filled} (${getPercentage(filled, total)}%) | ` +
+        `Active: ${active} (${getPercentage(active, total)}%) | ` +
+        `Rejected: ${rejected} (${getPercentage(rejected, total)}%)`;
+
+}
+
+
+function getPercentage(
+    value,
+    total
+) {
+
+    if (!total) {
+        return 0;
+    }
+
+
+    return (
+        (value / total) * 100
+    ).toFixed(1);
 }
 
 

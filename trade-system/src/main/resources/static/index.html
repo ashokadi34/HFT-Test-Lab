@@ -232,11 +232,13 @@
         <div class="section-header">
 
             <div>
+
                 <h2>Order Analytics</h2>
 
                 <p class="section-subtitle">
                     Current order status distribution
                 </p>
+
             </div>
 
         </div>
@@ -248,8 +250,10 @@
                     id="statusChart"
                     class="status-chart">
 
-                <div class="chart-center">
-                    Orders
+                <div
+                        id="chartTotal"
+                        class="chart-center">
+                    0 Orders
                 </div>
 
             </div>
@@ -257,19 +261,72 @@
 
             <div class="chart-legend">
 
-                <div>
-                    <span class="legend-dot filled-dot"></span>
-                    Filled
+                <div class="chart-legend-item">
+
+                    <div class="chart-legend-label">
+
+                    <span
+                            class="legend-dot filled-dot">
+                    </span>
+
+                        <span>
+                        Filled
+                    </span>
+
+                    </div>
+
+                    <span
+                            id="filledAnalytics"
+                            class="chart-legend-value">
+                    0
+                </span>
+
                 </div>
 
-                <div>
-                    <span class="legend-dot active-dot"></span>
-                    Active
+
+                <div class="chart-legend-item">
+
+                    <div class="chart-legend-label">
+
+                    <span
+                            class="legend-dot active-dot">
+                    </span>
+
+                        <span>
+                        Active
+                    </span>
+
+                    </div>
+
+                    <span
+                            id="activeAnalytics"
+                            class="chart-legend-value">
+                    0
+                </span>
+
                 </div>
 
-                <div>
-                    <span class="legend-dot rejected-dot"></span>
-                    Rejected
+
+                <div class="chart-legend-item">
+
+                    <div class="chart-legend-label">
+
+                    <span
+                            class="legend-dot rejected-dot">
+                    </span>
+
+                        <span>
+                        Rejected
+                    </span>
+
+                    </div>
+
+                    <span
+                            id="rejectedAnalytics"
+                            class="chart-legend-value">
+                    0
+                </span>
+
                 </div>
 
             </div>

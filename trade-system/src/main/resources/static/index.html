@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>HFT Test Lab - Trading Dashboard</title>
+
+    <link rel="stylesheet"
+          href="/css/dashboard.css">
+
+</head>
+
+<body>
+
+<header class="header">
+
+    <div>
+        <h1>HFT Test Lab</h1>
+        <span>Trading Operations Dashboard</span>
+    </div>
+
+    <div class="system-status">
+        <span class="status-dot"></span>
+        SYSTEM ONLINE
+    </div>
+
+</header>
+
+
+<main class="container">
+
+    <!-- ============================= -->
+    <!-- ORDER ENTRY -->
+    <!-- ============================= -->
+
+    <section class="card">
+
+        <h2>Order Entry</h2>
+
+        <form id="orderForm">
+
+            <div class="form-grid">
+
+                <div>
+                    <label for="symbol">
+                        Symbol
+                    </label>
+
+                    <input
+                            id="symbol"
+                            name="symbol"
+                            type="text"
+                            placeholder="INFY"
+                            required>
+                </div>
+
+
+                <div>
+                    <label for="price">
+                        Price
+                    </label>
+
+                    <input
+                            id="price"
+                            name="price"
+                            type="number"
+                            step="0.01"
+                            required>
+                </div>
+
+
+                <div>
+                    <label for="quantity">
+                        Quantity
+                    </label>
+
+                    <input
+                            id="quantity"
+                            name="quantity"
+                            type="number"
+                            min="1"
+                            required>
+                </div>
+
+
+                <div>
+                    <label for="side">
+                        Side
+                    </label>
+
+                    <select id="side">
+
+                        <option value="BUY">
+                            BUY
+                        </option>
+
+                        <option value="SELL">
+                            SELL
+                        </option>
+
+                    </select>
+                </div>
+
+            </div>
+
+
+            <button
+                    id="submitOrder"
+                    type="submit">
+
+                Submit Order
+
+            </button>
+
+        </form>
+
+
+        <div
+                id="orderMessage"
+                class="message">
+        </div>
+
+    </section>
+
+
+    <!-- ============================= -->
+    <!-- ORDER BOOK -->
+    <!-- ============================= -->
+
+    <section class="card">
+
+        <div class="section-header">
+
+            <div>
+                <h2>Order Book</h2>
+
+                <p class="section-subtitle">
+                    Aggregated active orders by price
+                </p>
+            </div>
+
+        </div>
+
+
+        <div class="order-book-controls">
+
+            <input
+                    id="bookSymbol"
+                    type="text"
+                    value="INFY"
+                    placeholder="Symbol">
+
+
+            <select id="orderBookSideFilter">
+
+                <option value="">
+                    All Sides
+                </option>
+
+                <option value="BUY">
+                    BUY
+                </option>
+
+                <option value="SELL">
+                    SELL
+                </option>
+
+            </select>
+
+
+            <input
+                    id="orderBookMinPrice"
+                    type="number"
+                    step="any"
+                    placeholder="Min Price">
+
+
+            <input
+                    id="orderBookMaxPrice"
+                    type="number"
+                    step="any"
+                    placeholder="Max Price">
+
+
+            <button
+                    id="refreshBook"
+                    class="primary-button">
+                Refresh
+            </button>
+
+        </div>
+
+
+        <table id="orderBookTable">
+
+            <thead>
+
+            <tr>
+
+                <th>
+                    Price
+                </th>
+
+                <th>
+                    BUY Qty
+                </th>
+
+                <th>
+                    SELL Qty
+                </th>
+
+            </tr>
+
+            </thead>
+
+            <tbody id="orderBookBody">
+            </tbody>
+
+        </table>
+
+    </section>
+
+
+<!--    ============-->
+    <section class="dashboard-card">
+
+        <div class="section-header">
+
+            <div>
+                <h2>Order Analytics</h2>
+
+                <p class="section-subtitle">
+                    Current order status distribution
+                </p>
+            </div>
+
+        </div>
+
+
+        <div class="analytics-container">
+
+            <div
+                    id="statusChart"
+                    class="status-chart">
+
+                <div class="chart-center">
+                    Orders
+                </div>
+
+            </div>
+
+
+            <div class="chart-legend">
+
+                <div>
+                    <span class="legend-dot filled-dot"></span>
+                    Filled
+                </div>
+
+                <div>
+                    <span class="legend-dot active-dot"></span>
+                    Active
+                </div>
+
+                <div>
+                    <span class="legend-dot rejected-dot"></span>
+                    Rejected
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+<!--    ============-->
+    <!-- ============================= -->
+    <!-- ORDERS -->
+    <!-- ============================= -->
+
+    <section class="card">
+
+        <div class="section-header">
+            <div>
+                <h2>Orders</h2>
+                <p class="section-subtitle">
+                    Order history and execution status
+                </p>
+            </div>
+
+            <div class="section-actions">
+                <button
+                        id="clearOrderFilters"
+                        class="secondary-button">
+                    Clear Filters
+                </button>
+
+                <button
+                        id="refreshOrders"
+                        class="primary-button">
+                    Refresh
+                </button>
+            </div>
+        </div>
+
+
+        <!-- =====================================
+             ORDER SUMMARY
+             ===================================== -->
+
+        <div class="order-summary">
+
+            <div class="summary-card">
+                <span>Total Orders</span>
+                <strong id="totalOrders">0</strong>
+            </div>
+
+            <div class="summary-card">
+                <span>Active Orders</span>
+                <strong id="activeOrders">0</strong>
+            </div>
+
+            <div class="summary-card">
+                <span>Filled</span>
+                <strong id="filledOrders">0</strong>
+            </div>
+
+            <div class="summary-card">
+                <span>Partial</span>
+                <strong id="partialOrders">0</strong>
+            </div>
+
+            <div class="summary-card">
+                <span>Rejected</span>
+                <strong id="rejectedOrders">0</strong>
+            </div>
+
+        </div>
+
+
+        <!-- =====================================
+             FILTERS
+             ===================================== -->
+
+        <div class="orders-filters">
+
+            <input
+                    id="orderIdFilter"
+                    type="number"
+                    placeholder="ID">
+
+
+            <select id="orderSymbolFilter">
+                <option value="">
+                    All Symbols
+                </option>
+            </select>
+
+
+            <input
+                    id="orderMinPrice"
+                    type="number"
+                    step="any"
+                    placeholder="Min Price">
+
+
+            <input
+                    id="orderMaxPrice"
+                    type="number"
+                    step="any"
+                    placeholder="Max Price">
+
+
+            <input
+                    id="orderMinQuantity"
+                    type="number"
+                    placeholder="Min Qty">
+
+
+            <input
+                    id="orderMaxQuantity"
+                    type="number"
+                    placeholder="Max Qty">
+
+
+            <select id="orderSideFilter">
+
+                <option value="">
+                    All Sides
+                </option>
+
+                <option value="BUY">
+                    BUY
+                </option>
+
+                <option value="SELL">
+                    SELL
+                </option>
+
+            </select>
+
+
+            <select id="orderStatusFilter">
+
+                <option value="">
+                    All Statuses
+                </option>
+
+                <option value="NEW">
+                    NEW
+                </option>
+
+                <option value="VALIDATING">
+                    VALIDATING
+                </option>
+
+                <option value="ACCEPTED">
+                    ACCEPTED
+                </option>
+
+                <option value="SENT_TO_EXCHANGE">
+                    SENT TO EXCHANGE
+                </option>
+
+                <option value="PARTIALLY_FILLED">
+                    PARTIALLY FILLED
+                </option>
+
+                <option value="FILLED">
+                    FILLED
+                </option>
+
+                <option value="REJECTED">
+                    REJECTED
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <table id="ordersTable">
+
+            <thead>
+
+            <tr>
+
+                <th data-sort="id">
+                    ID ↕
+                </th>
+
+                <th data-sort="symbol">
+                    Symbol ↕
+                </th>
+
+                <th data-sort="price">
+                    Price ↕
+                </th>
+
+                <th data-sort="quantity">
+                    Quantity ↕
+                </th>
+
+                <th data-sort="side">
+                    Side ↕
+                </th>
+
+                <th data-sort="status">
+                    Status ↕
+                </th>
+
+            </tr>
+
+            </thead>
+
+            <tbody id="ordersBody">
+            </tbody>
+
+        </table>
+
+
+        <div
+                id="ordersPagination"
+                class="pagination">
+        </div>
+
+    </section>
+
+</main>
+
+
+<script src="/js/dashboard.js"></script>
+
+</body>
+
+</html>

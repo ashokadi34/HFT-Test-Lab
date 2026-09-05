@@ -786,21 +786,13 @@ async function refreshOrderBook(symbol) {
 function renderOrderBook(levels) {
 
     const sideFilter =
-        getValue(
-            "orderBookSideFilter"
-        );
-
+        getValue("orderBookSideFilter");
 
     const minPrice =
-        getNumber(
-            "orderBookMinPrice"
-        );
-
+        getNumber("orderBookMinPrice");
 
     const maxPrice =
-        getNumber(
-            "orderBookMaxPrice"
-        );
+        getNumber("orderBookMaxPrice");
 
 
     const filteredLevels =
@@ -809,24 +801,17 @@ function renderOrderBook(levels) {
             const price =
                 Number(level.price);
 
-            const buyQty =
-                Number(
-                    level.buyQuantity ?? 0
-                );
-
-            const sellQty =
-                Number(
-                    level.sellQuantity ?? 0
-                );
+            const side =
+                level.side;
 
 
+            // Price filters
             if (
                 minPrice !== null &&
                 price < minPrice
             ) {
                 return false;
             }
-
 
             if (
                 maxPrice !== null &&
@@ -836,33 +821,23 @@ function renderOrderBook(levels) {
             }
 
 
+            // Side filter
             if (
-                sideFilter === "BUY" &&
-                buyQty <= 0
-            ) {
-                return false;
-            }
-
-
-            if (
-                sideFilter === "SELL" &&
-                sellQty <= 0
+                sideFilter &&
+                side !== sideFilter
             ) {
                 return false;
             }
 
 
             return true;
-
         });
 
 
     orderBookBody.innerHTML = "";
 
 
-    if (
-        filteredLevels.length === 0
-    ) {
+    if (filteredLevels.length === 0) {
 
         orderBookBody.innerHTML = `
             <tr>
@@ -879,25 +854,37 @@ function renderOrderBook(levels) {
 
     filteredLevels.forEach(level => {
 
+        const side =
+            level.side;
+
+        const quantity =
+            Number(level.quantity ?? 0);
+
+
+        const buyQuantity =
+            side === "BUY"
+                ? quantity
+                : 0;
+
+        const sellQuantity =
+            side === "SELL"
+                ? quantity
+                : 0;
+
+
         const row =
             document.createElement("tr");
 
 
         row.innerHTML = `
-
             <td>${formatNumber(level.price)}</td>
-
-            <td>${formatNumber(level.buyQuantity ?? 0)}</td>
-
-            <td>${formatNumber(level.sellQuantity ?? 0)}</td>
-
+            <td>${formatNumber(buyQuantity)}</td>
+            <td>${formatNumber(sellQuantity)}</td>
         `;
 
 
         orderBookBody.appendChild(row);
-
     });
-
 }
 
 

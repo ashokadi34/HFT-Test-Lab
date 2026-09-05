@@ -21,7 +21,19 @@ public class OrderValidator {
             "ASUS",
             "MSFT",
             "DJI",
-            "GOOGLE"
+            "GOOGLE",
+
+            // Test-only symbols
+            "TESTA",
+            "TESTB",
+            "TESTC",
+            "TESTD",
+            "TESTE",
+            "TESTF",
+            "TESTG",
+            "TESTH",
+            "TESTI",
+            "TESTJ"
     );
 
     public void validate(OrderRequest request) {

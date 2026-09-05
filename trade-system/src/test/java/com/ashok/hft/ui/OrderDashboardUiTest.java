@@ -31,6 +31,10 @@ class OrderDashboardUiTest {
     private OrderDashboardPage dashboard;
 
 
+    // ---------------------------------------------------------
+    // Test Setup
+    // ---------------------------------------------------------
+
     @BeforeAll
     static void beforeAll() {
 
@@ -76,6 +80,10 @@ class OrderDashboardUiTest {
     }
 
 
+    // ---------------------------------------------------------
+    // UI-001: Dashboard should load successfully
+    // ---------------------------------------------------------
+
     @Test
     void shouldDisplayTradingDashboard() {
 
@@ -87,20 +95,27 @@ class OrderDashboardUiTest {
 
         assertTrue(
                 page.locator("#orderForm")
-                        .isVisible()
+                        .isVisible(),
+                "Order form should be visible"
         );
 
         assertTrue(
                 page.locator("#ordersTable")
-                        .isVisible()
+                        .isVisible(),
+                "Orders table should be visible"
         );
 
         assertTrue(
                 page.locator("#orderBookTable")
-                        .isVisible()
+                        .isVisible(),
+                "Order book table should be visible"
         );
     }
 
+
+    // ---------------------------------------------------------
+    // UI-002: Create BUY order
+    // ---------------------------------------------------------
 
     @Test
     void shouldCreateBuyOrderThroughUi() {
@@ -120,10 +135,141 @@ class OrderDashboardUiTest {
 
         dashboard.waitForOrderMessage();
 
+        String message =
+                dashboard.getOrderMessage();
+
         assertTrue(
-                dashboard.getOrderMessage()
-                        .contains("created successfully"),
-                "Order creation success message should be displayed"
+                message.contains("created successfully"),
+                "Unexpected order message: [" + message + "]"
+        );
+    }
+
+
+    // ---------------------------------------------------------
+    // UI-003: Create SELL order
+    // ---------------------------------------------------------
+
+    @Test
+    void shouldCreateSellOrderThroughUi() {
+
+        double testPrice =
+                110000 + (System.currentTimeMillis() % 10000);
+
+        dashboard.enterSymbol("INFY");
+
+        dashboard.enterPrice(testPrice);
+
+        dashboard.enterQuantity(5);
+
+        dashboard.selectSide("SELL");
+
+        dashboard.submitOrder();
+
+        dashboard.waitForOrderMessage();
+
+        String message =
+                dashboard.getOrderMessage();
+
+        assertTrue(
+                message.contains("created successfully"),
+                "Unexpected order message: [" + message + "]"
+        );
+    }
+
+
+    // ---------------------------------------------------------
+    // UI-004: Created order should appear in Orders table
+    // ---------------------------------------------------------
+
+    @Test
+    void shouldDisplayCreatedOrderInOrdersTable() {
+
+        double testPrice =
+                120000 + (System.currentTimeMillis() % 10000);
+
+        dashboard.enterSymbol("TCS");
+
+        dashboard.enterPrice(testPrice);
+
+        dashboard.enterQuantity(20);
+
+        dashboard.selectSide("BUY");
+
+        dashboard.submitOrder();
+
+        dashboard.waitForOrderMessage();
+
+        String message =
+                dashboard.getOrderMessage();
+
+        System.out.println(
+                "UI Order Message: [" + message + "]"
+        );
+
+        assertTrue(
+                message.contains("created successfully"),
+                "Unexpected order message: [" + message + "]"
+        );
+
+        /*
+         * Expected message:
+         *
+         * Order <ID> created successfully
+         *
+         * Extract the generated order ID instead of
+         * hardcoding an ID.
+         */
+        String orderId =
+                message.replaceAll(
+                        ".*Order\\s+(\\d+)\\s+created successfully.*",
+                        "$1"
+                );
+
+        assertTrue(
+                orderId.matches("\\d+"),
+                "Generated order ID should be present in success message"
+        );
+
+        /*
+         * refreshOrders() is triggered by the application
+         * after successful order creation.
+         *
+         * Locate the newly-created order using its ID.
+         */
+        dashboard.waitForOrderInTable(orderId);
+
+        var orderRows =
+                page.locator("#ordersTable tbody tr");
+
+        assertTrue(
+                orderRows
+                        .filter(
+                                new com.microsoft.playwright.Locator.FilterOptions()
+                                        .setHasText(orderId)
+                        )
+                        .count() > 0,
+                "Created order should appear in Orders table"
+        );
+    }
+
+
+    // ---------------------------------------------------------
+    // UI-005: Order Book should be displayed
+    // ---------------------------------------------------------
+
+    @Test
+    void shouldDisplayOrderBook() {
+
+        assertTrue(
+                page.locator("#orderBookTable")
+                        .isVisible(),
+                "Order Book table should be visible"
+        );
+
+        assertTrue(
+                page.locator("#orderBookTable thead")
+                        .isVisible(),
+                "Order Book table header should be visible"
         );
     }
 }

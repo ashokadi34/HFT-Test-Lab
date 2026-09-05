@@ -49,12 +49,27 @@ public class OrderDashboardPage {
 
         page.locator("#orderMessage")
                 .waitFor();
+
+        page.waitForFunction(
+                "() => document.querySelector('#orderMessage')?.textContent.includes('created successfully')"
+        );
     }
 
     public String getOrderMessage() {
 
         return page.locator("#orderMessage")
                 .innerText();
+    }
+
+    public void waitForOrderInTable(String orderId) {
+
+        page.locator("#ordersTable tbody tr")
+                .filter(
+                        new com.microsoft.playwright.Locator.FilterOptions()
+                                .setHasText(orderId)
+                )
+                .first()
+                .waitFor();
     }
 
     public void refreshOrders() {

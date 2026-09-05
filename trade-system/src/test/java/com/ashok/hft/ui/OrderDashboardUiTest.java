@@ -483,8 +483,8 @@ class OrderDashboardUiTest {
     }
 
     // ---------------------------------------------------------
-// UI-010: Maximum price
-// ---------------------------------------------------------
+    // UI-010: Maximum price
+    // ---------------------------------------------------------
 
     @Test
     void shouldFilterOrderBookByMaximumPrice() {
@@ -538,8 +538,8 @@ class OrderDashboardUiTest {
     }
 
     // ---------------------------------------------------------
-// UI-011: Clear Order Book filters
-// ---------------------------------------------------------
+    // UI-011: Clear Order Book filters
+    // ---------------------------------------------------------
 
     @Test
     void shouldClearOrderBookFilters() {
@@ -611,5 +611,260 @@ class OrderDashboardUiTest {
                 "SELL price should be displayed after clearing filters"
         );
     }
+
+    // ---------------------------------------------------------
+    // UI-012: Orders table Symbol filter
+    // ---------------------------------------------------------
+
+    @Test
+    void shouldFilterOrdersTableBySymbol() {
+
+        createOrder(
+                "TESTG",
+                100000,
+                10,
+                "BUY"
+        );
+
+        createOrder(
+                "TESTH",
+                110000,
+                5,
+                "SELL"
+        );
+
+        // Select TESTG from Orders table Symbol filter
+        dashboard.selectOrderSymbolFilter("TESTG");
+
+        // Wait until filtered table contains TESTG
+        dashboard.waitForOrdersTableToContain("TESTG");
+
+        // Wait until TESTH is removed from the filtered table
+        dashboard.waitForOrdersTableNotToContain("TESTH");
+
+        String ordersTable =
+                dashboard.getOrdersTableText();
+
+        assertTrue(
+                ordersTable.contains("TESTG"),
+                "TESTG order should be displayed after symbol filter"
+        );
+
+        assertFalse(
+                ordersTable.contains("TESTH"),
+                "TESTH order should not be displayed after TESTG symbol filter"
+        );
+
+        // Verify every displayed row belongs to TESTG
+        var orderRows =
+                page.locator("#ordersTable tbody tr");
+
+        assertTrue(
+                orderRows.count() > 0,
+                "At least one order should be displayed"
+        );
+
+        for (int i = 0; i < orderRows.count(); i++) {
+
+            String symbol =
+                    orderRows
+                            .nth(i)
+                            .locator("td")
+                            .nth(1)
+                            .innerText();
+
+            assertEquals(
+                    "TESTG",
+                    symbol,
+                    "Every displayed order should belong to TESTG"
+            );
+        }
+    }
+
+    // ---------------------------------------------------------
+    // UI-013: Orders table Price sorting
+    // ---------------------------------------------------------
+
+    @Test
+    void shouldSortOrdersTableByPrice() {
+
+        createOrder(
+                "TESTI",
+                100000,
+                10,
+                "BUY"
+        );
+
+        createOrder(
+                "TESTI",
+                120000,
+                5,
+                "SELL"
+        );
+
+        // Filter Orders table by TESTI
+        dashboard.selectOrderSymbolFilter("TESTI");
+
+        dashboard.waitForOrdersTableToContain("TESTI");
+
+        assertEquals(
+                2,
+                dashboard.getOrdersTableRowCount(),
+                "Two TESTI orders should be displayed"
+        );
+
+        // ---------------------------------------------------------
+        // Ascending price sort
+        // ---------------------------------------------------------
+
+        dashboard.selectOrderPriceSort();
+
+        dashboard.waitForOrdersTableToContain("1,00,000");
+
+        String firstPriceAscending =
+                dashboard.getOrderPriceAtRow(0);
+
+        String secondPriceAscending =
+                dashboard.getOrderPriceAtRow(1);
+
+        assertEquals(
+                "1,00,000",
+                firstPriceAscending,
+                "Lowest price should appear first in ascending order"
+        );
+
+        assertEquals(
+                "1,20,000",
+                secondPriceAscending,
+                "Highest price should appear second in ascending order"
+        );
+
+        // ---------------------------------------------------------
+        // Descending price sort
+        // ---------------------------------------------------------
+
+        dashboard.selectOrderPriceSort();
+
+        String firstPriceDescending =
+                dashboard.getOrderPriceAtRow(0);
+
+        String secondPriceDescending =
+                dashboard.getOrderPriceAtRow(1);
+
+        assertEquals(
+                "1,20,000",
+                firstPriceDescending,
+                "Highest price should appear first in descending order"
+        );
+
+        assertEquals(
+                "1,00,000",
+                secondPriceDescending,
+                "Lowest price should appear second in descending order"
+        );
+    }
+
+    // ---------------------------------------------------------
+// UI-014: Summary Cards + Order Analytics
+// ---------------------------------------------------------
+
+    @Test
+    void shouldUpdateSummaryCardsAndOrderAnalytics() {
+
+        // ---------------------------------------------------------
+        // Wait for initial dashboard data
+        // ---------------------------------------------------------
+
+        dashboard.waitForDashboardDataLoaded();
+
+        int totalBefore =
+                dashboard.getTotalOrders();
+
+        int activeBefore =
+                dashboard.getActiveOrders();
+
+        // ---------------------------------------------------------
+        // Create two valid TESTB orders
+        // ---------------------------------------------------------
+
+        createOrder(
+                "TESTB",
+                100000,
+                10,
+                "BUY"
+        );
+
+        createOrder(
+                "TESTB",
+                110000,
+                5,
+                "SELL"
+        );
+
+        // ---------------------------------------------------------
+        // Explicitly refresh dashboard data
+        // ---------------------------------------------------------
+
+        dashboard.refreshOrders();
+
+        page.waitForFunction(
+                """
+                (expected) => {
+                    const element =
+                        document.querySelector("#totalOrders");
+    
+                    return element &&
+                           Number(element.innerText.trim()) >= expected;
+                }
+                """,
+                totalBefore + 2
+        );
+
+        // ---------------------------------------------------------
+        // Read updated summary cards
+        // ---------------------------------------------------------
+
+        int totalAfter =
+                dashboard.getTotalOrders();
+
+        int activeAfter =
+                dashboard.getActiveOrders();
+
+        // ---------------------------------------------------------
+        // Summary Cards
+        // ---------------------------------------------------------
+
+        assertEquals(
+                totalBefore + 2,
+                totalAfter,
+                "Total Orders should increase by 2"
+        );
+
+        assertEquals(
+                activeBefore + 2,
+                activeAfter,
+                "Active Orders should increase by 2"
+        );
+
+        // ---------------------------------------------------------
+        // Verify remaining summary cards are displayed
+        // ---------------------------------------------------------
+
+        assertTrue(
+                dashboard.getFilledOrders() >= 0,
+                "Filled Orders card should be displayed"
+        );
+
+        assertTrue(
+                dashboard.getPartialOrders() >= 0,
+                "Partial Orders card should be displayed"
+        );
+
+        assertTrue(
+                dashboard.getRejectedOrders() >= 0,
+                "Rejected Orders card should be displayed"
+        );
+    }
+
 
 }

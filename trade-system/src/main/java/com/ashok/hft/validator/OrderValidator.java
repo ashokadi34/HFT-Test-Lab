@@ -33,7 +33,10 @@ public class OrderValidator {
             "TESTG",
             "TESTH",
             "TESTI",
-            "TESTJ"
+            "TESTJ",
+            "TESTK",
+            "TESTL",
+            "TESTM"
     );
 
     public void validate(OrderRequest request) {

@@ -369,62 +369,70 @@ class OrderDashboardUiTest {
     }
 
     // ---------------------------------------------------------
-    // UI-008: BUY/SELL side filter
-    // ---------------------------------------------------------
+// UI-008: Filter Order Book by BUY/SELL side
+// ---------------------------------------------------------
 
     @Test
     void shouldFilterOrderBookBySide() {
 
-        createOrder("TESTC", 100000, 10, "BUY");
-        createOrder("TESTC", 110000, 5, "SELL");
+        // ---------------------------------------------------------
+        // Create unique prices for this test execution
+        // ---------------------------------------------------------
 
-        dashboard.enterOrderBookSymbol("TESTC");
+        int lowPrice =
+                130000
+                        + (int)
+                        (System.currentTimeMillis() % 5000);
+
+        int highPrice =
+                lowPrice + 5000;
+
+
+        // ---------------------------------------------------------
+        // Create BUY and SELL orders
+        // ---------------------------------------------------------
+
+        createOrder(
+                "TESTK",
+                lowPrice,
+                10,
+                "BUY"
+        );
+
+        createOrder(
+                "TESTK",
+                highPrice,
+                5,
+                "SELL"
+        );
+
+
+        // ---------------------------------------------------------
+        // Load TESTK Order Book
+        // ---------------------------------------------------------
+
+        dashboard.enterOrderBookSymbol("TESTK");
+
         dashboard.clickRefreshOrderBook();
+
         dashboard.waitForOrderBookToLoad();
 
-
-        // =========================
+        // ---------------------------------------------------------
         // BUY FILTER
-        // =========================
+        // ---------------------------------------------------------
 
         dashboard.selectOrderBookSide("BUY");
 
-        dashboard.waitForOrderBookToContain("1,00,000");
+        dashboard.waitForOrderBookToShowOnlySide("BUY");
 
-        String buyBook =
-                dashboard.getOrderBookText();
-
-        assertTrue(
-                buyBook.contains("1,00,000"),
-                "BUY order-book price should be displayed"
-        );
-
-        assertFalse(
-                buyBook.contains("1,10,000"),
-                "SELL price should not be displayed when BUY filter is selected"
-        );
-
-
-        // =========================
+        // ---------------------------------------------------------
         // SELL FILTER
-        // =========================
+        // ---------------------------------------------------------
 
         dashboard.selectOrderBookSide("SELL");
 
-        dashboard.waitForOrderBookToContain("1,10,000");
+        dashboard.waitForOrderBookToShowOnlySide("SELL");
 
-        String sellBook =
-                dashboard.getOrderBookText();
-
-        assertTrue(
-                sellBook.contains("1,10,000"),
-                "SELL order-book price should be displayed"
-        );
-
-        assertFalse(
-                sellBook.contains("1,00,000"),
-                "BUY price should not be displayed when SELL filter is selected"
-        );
     }
 
     // ---------------------------------------------------------
@@ -682,91 +690,111 @@ class OrderDashboardUiTest {
     }
 
     // ---------------------------------------------------------
-    // UI-013: Orders table Price sorting
-    // ---------------------------------------------------------
+// UI-013: Orders table Price sorting
+// ---------------------------------------------------------
 
     @Test
     void shouldSortOrdersTableByPrice() {
 
+        long uniqueBase =
+                130000 + (System.currentTimeMillis() % 5000);
+
+        int lowPrice =
+                (int) uniqueBase;
+
+        int highPrice =
+                lowPrice + 5000;
+
+
+        // Create two unique TESTI orders
+
         createOrder(
                 "TESTI",
-                100000,
+                lowPrice,
                 10,
                 "BUY"
         );
 
         createOrder(
                 "TESTI",
-                120000,
+                highPrice,
                 5,
                 "SELL"
         );
 
-        // Filter Orders table by TESTI
+
+        // Filter by TESTI
+
         dashboard.selectOrderSymbolFilter("TESTI");
 
-        dashboard.waitForOrdersTableToContain("TESTI");
-
-        assertEquals(
-                2,
-                dashboard.getOrdersTableRowCount(),
-                "Two TESTI orders should be displayed"
+        dashboard.waitForOrdersTableToContainPrice(
+                lowPrice
         );
 
-        // ---------------------------------------------------------
-        // Ascending price sort
-        // ---------------------------------------------------------
-
-        dashboard.selectOrderPriceSort();
-
-        dashboard.waitForOrdersTableToContain("1,00,000");
-
-        String firstPriceAscending =
-                dashboard.getOrderPriceAtRow(0);
-
-        String secondPriceAscending =
-                dashboard.getOrderPriceAtRow(1);
-
-        assertEquals(
-                "1,00,000",
-                firstPriceAscending,
-                "Lowest price should appear first in ascending order"
+        dashboard.waitForOrdersTableToContainPrice(
+                highPrice
         );
 
-        assertEquals(
-                "1,20,000",
-                secondPriceAscending,
-                "Highest price should appear second in ascending order"
-        );
 
         // ---------------------------------------------------------
-        // Descending price sort
+        // Ascending
         // ---------------------------------------------------------
 
         dashboard.selectOrderPriceSort();
 
-        String firstPriceDescending =
-                dashboard.getOrderPriceAtRow(0);
-
-        String secondPriceDescending =
-                dashboard.getOrderPriceAtRow(1);
-
-        assertEquals(
-                "1,20,000",
-                firstPriceDescending,
-                "Highest price should appear first in descending order"
+        dashboard.waitForPriceOrder(
+                lowPrice,
+                highPrice,
+                true
         );
 
-        assertEquals(
-                "1,00,000",
-                secondPriceDescending,
-                "Lowest price should appear second in descending order"
+
+        // Verify actual positions
+
+        int lowAscending =
+                dashboard.findOrderPriceRow(lowPrice);
+
+        int highAscending =
+                dashboard.findOrderPriceRow(highPrice);
+
+
+        assertTrue(
+                lowAscending < highAscending,
+                "Lower price should appear before higher price "
+                        + "in ascending order"
+        );
+
+
+        // ---------------------------------------------------------
+        // Descending
+        // ---------------------------------------------------------
+
+        dashboard.selectOrderPriceSort();
+
+        dashboard.waitForPriceOrder(
+                lowPrice,
+                highPrice,
+                false
+        );
+
+
+        int lowDescending =
+                dashboard.findOrderPriceRow(lowPrice);
+
+        int highDescending =
+                dashboard.findOrderPriceRow(highPrice);
+
+
+        assertTrue(
+                highDescending < lowDescending,
+                "Higher price should appear before lower price "
+                        + "in descending order"
         );
     }
 
     // ---------------------------------------------------------
-// UI-014: Summary Cards + Order Analytics
-// ---------------------------------------------------------
+    // UI-014: Summary Cards + Order Analytics
+    // ---------------------------------------------------------
 
     @Test
     void shouldUpdateSummaryCardsAndOrderAnalytics() {

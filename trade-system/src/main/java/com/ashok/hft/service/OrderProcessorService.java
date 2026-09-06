@@ -44,7 +44,10 @@ public class OrderProcessorService {
             "TESTG",
             "TESTH",
             "TESTI",
-            "TESTJ"
+            "TESTJ",
+            "TESTK",
+            "TESTL",
+            "TESTM"
     );
 
     public void process(Order order) {

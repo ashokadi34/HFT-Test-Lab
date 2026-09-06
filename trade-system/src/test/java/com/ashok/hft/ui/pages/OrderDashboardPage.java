@@ -152,6 +152,33 @@ public class OrderDashboardPage {
                 .innerText();
     }
 
+    public int findOrderPriceRow(int expectedPrice) {
+
+        Locator rows =
+                page.locator("#ordersBody tr");
+
+        for (int i = 0; i < rows.count(); i++) {
+
+            String priceText =
+                    rows.nth(i)
+                            .locator("td")
+                            .nth(2)
+                            .innerText()
+                            .trim();
+
+            int actualPrice =
+                    Integer.parseInt(
+                            priceText.replace(",", "")
+                    );
+
+            if (actualPrice == expectedPrice) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
     public int getOrdersTableRowCount() {
         return page.locator("#ordersBody tr").count();
     }
@@ -353,5 +380,226 @@ public class OrderDashboardPage {
                 text
         );
     }
+
+    public void waitForOrderBookToShowOnlySide(String side) {
+
+        page.waitForFunction(
+                """
+                (expectedSide) => {
+    
+                    const body =
+                        document.querySelector("#orderBookBody");
+    
+                    if (!body) {
+                        return false;
+                    }
+    
+                    const rows =
+                        Array.from(
+                            body.querySelectorAll("tr")
+                        );
+    
+                    if (rows.length === 0) {
+                        return false;
+                    }
+    
+                    return rows.every(row => {
+    
+                        const cells =
+                            row.querySelectorAll("td");
+    
+                        if (cells.length < 3) {
+                            return false;
+                        }
+    
+                        const buyQuantity =
+                            Number(
+                                cells[1].innerText
+                                    .replace(/,/g, "")
+                                    .trim()
+                            );
+    
+                        const sellQuantity =
+                            Number(
+                                cells[2].innerText
+                                    .replace(/,/g, "")
+                                    .trim()
+                            );
+    
+                        if (expectedSide === "BUY") {
+    
+                            return buyQuantity > 0 &&
+                                   sellQuantity === 0;
+                        }
+    
+                        if (expectedSide === "SELL") {
+    
+                            return buyQuantity === 0 &&
+                                   sellQuantity > 0;
+                        }
+    
+                        return false;
+                    });
+                }
+                """,
+                side
+        );
+    }
+
+    public void waitForOrderBookToShowOnly(
+            String expected,
+            String unexpected) {
+
+        page.waitForFunction(
+                """
+                (values) => {
+    
+                    const body =
+                        document.querySelector("#orderBookBody");
+    
+                    if (!body) {
+                        return false;
+                    }
+    
+                    const text =
+                        body.innerText;
+    
+                    const expected =
+                        values[0];
+    
+                    const unexpected =
+                        values[1];
+    
+                    return text.includes(expected) &&
+                           !text.includes(unexpected);
+                }
+                """,
+                java.util.List.of(
+                        expected,
+                        unexpected
+                )
+        );
+    }
+
+    public void waitForPriceOrder(
+            int lowerPrice,
+            int higherPrice,
+            boolean ascending) {
+
+        page.waitForFunction(
+                """
+                ({lowerPrice, higherPrice, ascending}) => {
+    
+                    const rows =
+                        document.querySelectorAll(
+                            "#ordersBody tr"
+                        );
+    
+                    let lowerIndex = -1;
+                    let higherIndex = -1;
+    
+                    rows.forEach((row, index) => {
+    
+                        const cells =
+                            row.querySelectorAll("td");
+    
+                        if (cells.length < 3) {
+                            return;
+                        }
+    
+                        const price =
+                            Number(
+                                cells[2]
+                                    .innerText
+                                    .replace(/,/g, "")
+                                    .trim()
+                            );
+    
+                        if (
+                            price === lowerPrice &&
+                            lowerIndex === -1
+                        ) {
+                            lowerIndex = index;
+                        }
+    
+                        if (
+                            price === higherPrice &&
+                            higherIndex === -1
+                        ) {
+                            higherIndex = index;
+                        }
+                    });
+    
+                    if (
+                        lowerIndex === -1 ||
+                        higherIndex === -1
+                    ) {
+                        return false;
+                    }
+    
+                    return ascending
+                        ? lowerIndex < higherIndex
+                        : higherIndex < lowerIndex;
+                }
+                """,
+                java.util.Map.of(
+                        "lowerPrice", lowerPrice,
+                        "higherPrice", higherPrice,
+                        "ascending", ascending
+                )
+        );
+    }
+
+    public int getOrderPriceAsIntAtRow(int rowIndex) {
+
+        String priceText =
+                page.locator("#ordersBody tr")
+                        .nth(rowIndex)
+                        .locator("td")
+                        .nth(2)
+                        .innerText()
+                        .trim();
+
+        return Integer.parseInt(
+                priceText.replace(",", "")
+        );
+    }
+
+    public void waitForOrdersTableToContainPrice(double price) {
+
+        int expectedPrice =
+                (int) price;
+
+        page.waitForFunction(
+                """
+                (expectedPrice) => {
+    
+                    const rows =
+                        document.querySelectorAll(
+                            "#ordersBody tr"
+                        );
+    
+                    return Array.from(rows).some(row => {
+    
+                        const cells =
+                            row.querySelectorAll("td");
+    
+                        if (cells.length < 3) {
+                            return false;
+                        }
+    
+                        const priceText =
+                            cells[2].innerText
+                                .replace(/,/g, "")
+                                .trim();
+    
+                        return Number(priceText) === expectedPrice;
+                    });
+                }
+                """,
+                expectedPrice
+        );
+    }
+
 
 }

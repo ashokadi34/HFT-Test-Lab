@@ -23,6 +23,10 @@ let currentPage = 1;
 
 const pageSize = 20;
 
+let orderBookCurrentPage = 1;
+const orderBookPageSize = 10;
+let filteredOrderBookLevels = [];
+
 let sortColumn = "id";
 
 let sortDirection = "desc";
@@ -733,6 +737,17 @@ async function refreshOrderBook(symbol) {
             </tr>
         `;
 
+        orderBookCurrentPage = 1;
+
+        const pagination =
+            document.getElementById(
+                "orderBookPagination"
+            );
+
+        if (pagination) {
+            pagination.innerHTML = "";
+        }
+
         return;
     }
 
@@ -783,6 +798,10 @@ async function refreshOrderBook(symbol) {
 // RENDER ORDER BOOK
 // =========================================
 
+// =========================================
+// RENDER ORDER BOOK
+// =========================================
+
 function renderOrderBook(levels) {
 
     const sideFilter =
@@ -795,49 +814,111 @@ function renderOrderBook(levels) {
         getNumber("orderBookMaxPrice");
 
 
-    const filteredLevels =
-        levels.filter(level => {
+    filteredOrderBookLevels =
+        levels
+            .map(level => {
 
-            const price =
-                Number(level.price);
+                const price =
+                    Number(level.price);
 
-            const side =
-                level.side;
+                const quantity =
+                    Number(level.quantity ?? 0);
 
-
-            // Price filters
-            if (
-                minPrice !== null &&
-                price < minPrice
-            ) {
-                return false;
-            }
-
-            if (
-                maxPrice !== null &&
-                price > maxPrice
-            ) {
-                return false;
-            }
+                const side =
+                    String(level.side ?? "")
+                        .toUpperCase();
 
 
-            // Side filter
-            if (
-                sideFilter &&
-                side !== sideFilter
-            ) {
-                return false;
-            }
+                return {
+                    ...level,
+
+                    price,
+
+                    buyQuantity:
+                        side === "BUY"
+                            ? quantity
+                            : 0,
+
+                    sellQuantity:
+                        side === "SELL"
+                            ? quantity
+                            : 0
+                };
+            })
+            .filter(level => {
+
+                const price =
+                    Number(level.price);
+
+                const buyQty =
+                    Number(
+                        level.buyQuantity ?? 0
+                    );
+
+                const sellQty =
+                    Number(
+                        level.sellQuantity ?? 0
+                    );
 
 
-            return true;
-        });
+                // Minimum price
+                if (
+                    minPrice !== null &&
+                    price < minPrice
+                ) {
+                    return false;
+                }
 
+
+                // Maximum price
+                if (
+                    maxPrice !== null &&
+                    price > maxPrice
+                ) {
+                    return false;
+                }
+
+
+                // BUY filter
+                if (
+                    sideFilter === "BUY" &&
+                    buyQty <= 0
+                ) {
+                    return false;
+                }
+
+
+                // SELL filter
+                if (
+                    sideFilter === "SELL" &&
+                    sellQty <= 0
+                ) {
+                    return false;
+                }
+
+
+                return true;
+            });
+
+
+    // Always start from page 1
+    // after loading/filtering data
+    orderBookCurrentPage = 1;
+
+
+    renderOrderBookPage();
+
+    renderOrderBookPagination();
+}
+
+function renderOrderBookPage() {
 
     orderBookBody.innerHTML = "";
 
 
-    if (filteredLevels.length === 0) {
+    if (
+        filteredOrderBookLevels.length === 0
+    ) {
 
         orderBookBody.innerHTML = `
             <tr>
@@ -852,25 +933,19 @@ function renderOrderBook(levels) {
     }
 
 
-    filteredLevels.forEach(level => {
-
-        const side =
-            level.side;
-
-        const quantity =
-            Number(level.quantity ?? 0);
+    const startIndex =
+        (orderBookCurrentPage - 1) *
+        orderBookPageSize;
 
 
-        const buyQuantity =
-            side === "BUY"
-                ? quantity
-                : 0;
+    const pageLevels =
+        filteredOrderBookLevels.slice(
+            startIndex,
+            startIndex + orderBookPageSize
+        );
 
-        const sellQuantity =
-            side === "SELL"
-                ? quantity
-                : 0;
 
+    pageLevels.forEach(level => {
 
         const row =
             document.createElement("tr");
@@ -878,13 +953,136 @@ function renderOrderBook(levels) {
 
         row.innerHTML = `
             <td>${formatNumber(level.price)}</td>
-            <td>${formatNumber(buyQuantity)}</td>
-            <td>${formatNumber(sellQuantity)}</td>
+
+            <td>
+                ${formatNumber(
+                    level.buyQuantity ?? 0
+                )}
+            </td>
+
+            <td>
+                ${formatNumber(
+                    level.sellQuantity ?? 0
+                )}
+            </td>
         `;
 
 
         orderBookBody.appendChild(row);
     });
+}
+
+function renderOrderBookPagination() {
+
+    const pagination =
+        document.getElementById(
+            "orderBookPagination"
+        );
+
+
+    if (!pagination) {
+        return;
+    }
+
+
+    pagination.innerHTML = "";
+
+
+    const totalLevels =
+        filteredOrderBookLevels.length;
+
+
+    const totalPages =
+        Math.ceil(
+            totalLevels /
+            orderBookPageSize
+        );
+
+
+    // Same behavior as Orders table
+    if (totalPages <= 1) {
+
+        pagination.innerHTML = `
+            <span>
+                Showing ${totalLevels}
+                of ${totalLevels} levels
+            </span>
+        `;
+
+        return;
+    }
+
+
+    const start =
+        ((orderBookCurrentPage - 1) *
+            orderBookPageSize) + 1;
+
+
+    const end =
+        Math.min(
+            orderBookCurrentPage *
+                orderBookPageSize,
+            totalLevels
+        );
+
+
+    const info =
+        document.createElement("span");
+
+    info.className =
+        "pagination-info";
+
+    info.textContent =
+        `Showing ${start}-${end} of ${totalLevels}`;
+
+
+    const previous =
+        document.createElement("button");
+
+    previous.textContent =
+        "Previous";
+
+    previous.disabled =
+        orderBookCurrentPage === 1;
+
+
+    previous.addEventListener(
+        "click",
+        function () {
+
+            orderBookCurrentPage--;
+
+            renderOrderBookPage();
+            renderOrderBookPagination();
+        }
+    );
+
+
+    const next =
+        document.createElement("button");
+
+    next.textContent =
+        "Next";
+
+    next.disabled =
+        orderBookCurrentPage === totalPages;
+
+
+    next.addEventListener(
+        "click",
+        function () {
+
+            orderBookCurrentPage++;
+
+            renderOrderBookPage();
+            renderOrderBookPagination();
+        }
+    );
+
+
+    pagination.appendChild(info);
+    pagination.appendChild(previous);
+    pagination.appendChild(next);
 }
 
 

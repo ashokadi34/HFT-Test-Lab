@@ -22,7 +22,7 @@ public class PerformanceMetrics {
     // Record response time
     // ---------------------------------------------------------
 
-    public void recordResponse(
+    public synchronized void recordResponse(
             long responseTimeMillis,
             boolean successful) {
 

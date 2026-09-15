@@ -1,0 +1,149 @@
+name: HFT Test Lab CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+
+  build-and-test:
+
+    name: Build and Automated Tests
+
+    runs-on: ubuntu-latest
+
+    services:
+
+      postgres:
+        image: postgres:17
+
+        env:
+          POSTGRES_DB: hftdb
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+
+        ports:
+          - 5432:5432
+
+        options: >-
+          --health-cmd="pg_isready -U postgres -d hftdb"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+
+    steps:
+
+      # -------------------------------------------------------
+      # Checkout source code
+      # -------------------------------------------------------
+
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+
+      # -------------------------------------------------------
+      # Setup Java
+      # -------------------------------------------------------
+
+      - name: Setup Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+
+      # -------------------------------------------------------
+      # Display environment
+      # -------------------------------------------------------
+
+      - name: Display Java and Maven versions
+        run: |
+          java -version
+          mvn -version
+
+
+      # -------------------------------------------------------
+      # Wait for PostgreSQL
+      # -------------------------------------------------------
+
+      - name: Wait for PostgreSQL
+        run: |
+          for i in {1..30}; do
+            if pg_isready -h localhost -p 5432 -U postgres -d hftdb; then
+              echo "PostgreSQL is ready"
+              exit 0
+            fi
+
+            echo "Waiting for PostgreSQL..."
+            sleep 2
+          done
+
+          echo "PostgreSQL did not become ready"
+          exit 1
+
+
+      # -------------------------------------------------------
+      # Build application
+      # -------------------------------------------------------
+
+      - name: Build application
+        run: |
+          mvn clean package -DskipTests
+
+
+      # -------------------------------------------------------
+      # Install Playwright Chromium
+      # -------------------------------------------------------
+
+      - name: Install Playwright Chromium
+        run: |
+          mvn exec:java \
+            -Dexec.mainClass=com.microsoft.playwright.CLI \
+            -Dexec.args="install --with-deps chromium"
+
+
+      # -------------------------------------------------------
+      # Run core API tests
+      # -------------------------------------------------------
+
+      - name: Run API tests
+        run: |
+          mvn -Dtest=OrderApiTest test
+
+
+      # -------------------------------------------------------
+      # Run UI automation tests
+      # -------------------------------------------------------
+
+      - name: Run UI automation tests
+        run: |
+          mvn -Dtest=OrderDashboardUiTest test
+
+
+      # -------------------------------------------------------
+      # Run performance tests
+      # -------------------------------------------------------
+
+      - name: Run performance tests
+        run: |
+          mvn -Dtest=OrderApiLatencyTest,ConcurrentOrderSubmissionTest,OrderApiPerformanceThresholdTest test
+
+
+      # -------------------------------------------------------
+      # Upload Maven test reports
+      # -------------------------------------------------------
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: maven-test-reports
+          path: |
+            target/surefire-reports/
+          if-no-files-found: warn

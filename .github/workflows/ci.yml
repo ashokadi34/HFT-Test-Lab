@@ -93,6 +93,7 @@ jobs:
       # -------------------------------------------------------
 
       - name: Build application
+        working-directory: trade-system
         run: |
           mvn clean package -DskipTests
 
@@ -102,6 +103,7 @@ jobs:
       # -------------------------------------------------------
 
       - name: Install Playwright Chromium
+        working-directory: trade-system
         run: |
           mvn exec:java \
             -Dexec.mainClass=com.microsoft.playwright.CLI \
@@ -113,6 +115,7 @@ jobs:
       # -------------------------------------------------------
 
       - name: Run API tests
+        working-directory: trade-system
         run: |
           mvn -Dtest=OrderApiTest test
 
@@ -122,6 +125,7 @@ jobs:
       # -------------------------------------------------------
 
       - name: Run UI automation tests
+        working-directory: trade-system
         run: |
           mvn -Dtest=OrderDashboardUiTest test
 
@@ -131,6 +135,7 @@ jobs:
       # -------------------------------------------------------
 
       - name: Run performance tests
+        working-directory: trade-system
         run: |
           mvn -Dtest=OrderApiLatencyTest,ConcurrentOrderSubmissionTest,OrderApiPerformanceThresholdTest test
 
@@ -145,5 +150,5 @@ jobs:
         with:
           name: maven-test-reports
           path: |
-            target/surefire-reports/
+            trade-system/target/surefire-reports/
           if-no-files-found: warn

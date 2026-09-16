@@ -1,5 +1,7 @@
 # 🚀 HFT-Test-Lab
 
+[![HFT Test Lab CI](https://github.com/ashokadi34/HFT-Test-Lab/actions/workflows/ci.yml/badge.svg)](https://github.com/ashokadi34/HFT-Test-Lab/actions/workflows/ci.yml)
+
 ### End-to-End QA Automation Lab for a Simulated High-Frequency Trading Platform
 
 HFT-Test-Lab is an educational and portfolio project that simulates a trading platform and demonstrates how a Senior QA / SDET engineer can validate a financial application across multiple layers.
@@ -820,7 +822,7 @@ Order Book Automation          ✅
 Performance Testing            ✅
 CI/CD                          ✅
 E2E Testing                    ✅
-Final Documentation            🚧
+Final Documentation            ✅
 ```
 
 ---

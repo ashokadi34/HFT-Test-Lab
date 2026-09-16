@@ -47,7 +47,20 @@ public class OrderProcessorService {
             "TESTJ",
             "TESTK",
             "TESTL",
-            "TESTM"
+            "TESTM",
+            "TESTN",
+            "TESTO",
+            "TESTP",
+            "TESTQ",
+            "TESTR",
+            "TESTS",
+            "TESTT",
+            "TESTU",
+            "TESTV",
+            "TESTW",
+            "TESTX",
+            "TESTY",
+            "TESTZ"
     );
 
     public void process(Order order) {

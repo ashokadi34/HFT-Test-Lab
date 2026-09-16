@@ -31,13 +31,13 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             List<OrderStatus> statuses
     );
 
-    List<Order> findBySymbolIgnoreCaseAndSideAndStatusInOrderByPriceAscCreatedTimeAsc(
+    List<Order> findBySymbolIgnoreCaseAndSideAndStatusInOrderByPriceAscCreatedTimeAscIdAsc(
             String symbol,
             OrderSide side,
             List<OrderStatus> statuses
     );
 
-    List<Order> findBySymbolIgnoreCaseAndSideAndStatusInOrderByPriceDescCreatedTimeAsc(
+    List<Order> findBySymbolIgnoreCaseAndSideAndStatusInOrderByPriceDescCreatedTimeAscIdAsc(
             String symbol,
             OrderSide side,
             List<OrderStatus> statuses

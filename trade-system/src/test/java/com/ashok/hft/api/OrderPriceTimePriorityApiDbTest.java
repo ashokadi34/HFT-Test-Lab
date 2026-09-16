@@ -41,8 +41,8 @@ class OrderPriceTimePriorityApiDbTest {
          *
          * The BUY order uses the same price to allow matching.
          */
-        double testPrice = 2000;
-//                100000 + (System.nanoTime() % 1000000);
+        double testPrice =
+                1 + (System.nanoTime() % 1000) / 1000.0;
 
         System.out.println(
                 "Test Price: " + testPrice
@@ -54,7 +54,7 @@ class OrderPriceTimePriorityApiDbTest {
 
         String sellRequest1 = """
                 {
-                    "symbol": "HDFCBANK",
+                    "symbol": "TESTM",
                     "price": %s,
                     "quantity": 30,
                     "side": "SELL"
@@ -90,7 +90,7 @@ class OrderPriceTimePriorityApiDbTest {
 
         String sellRequest2 = """
                 {
-                    "symbol": "HDFCBANK",
+                    "symbol": "TESTM",
                     "price": %s,
                     "quantity": 40,
                     "side": "SELL"
@@ -126,7 +126,7 @@ class OrderPriceTimePriorityApiDbTest {
 
         String buyRequest = """
                 {
-                    "symbol": "HDFCBANK",
+                    "symbol": "TESTM",
                     "price": %s,
                     "quantity": 50,
                     "side": "BUY"
@@ -169,7 +169,7 @@ class OrderPriceTimePriorityApiDbTest {
         );
 
         assertEquals(
-                "HDFCBANK",
+                "TESTM",
                 sellResult1.getString("symbol")
         );
 
@@ -208,7 +208,7 @@ class OrderPriceTimePriorityApiDbTest {
         );
 
         assertEquals(
-                "HDFCBANK",
+                "TESTM",
                 sellResult2.getString("symbol")
         );
 
@@ -247,7 +247,7 @@ class OrderPriceTimePriorityApiDbTest {
         );
 
         assertEquals(
-                "HDFCBANK",
+                "TESTM",
                 buyResult.getString("symbol")
         );
 
@@ -299,7 +299,7 @@ class OrderPriceTimePriorityApiDbTest {
         );
 
         assertEquals(
-                "HDFCBANK",
+                "TESTM",
                 tradeResult1.getString("symbol")
         );
 
@@ -346,7 +346,7 @@ class OrderPriceTimePriorityApiDbTest {
         );
 
         assertEquals(
-                "HDFCBANK",
+                "TESTM",
                 tradeResult2.getString("symbol")
         );
 

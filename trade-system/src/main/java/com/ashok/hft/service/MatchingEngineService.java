@@ -8,6 +8,7 @@ import com.ashok.hft.repository.OrderRepository;
 import com.ashok.hft.repository.TradeRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -34,36 +35,87 @@ public class MatchingEngineService {
                 OrderStatus.PARTIALLY_FILLED
         );
 
-        if (incomingOrder.getSide() == OrderSide.BUY) {
-
-            return orderRepository
-                    .findBySymbolIgnoreCaseAndSideAndStatusInOrderByPriceAscCreatedTimeAsc(
-                            incomingOrder.getSymbol(),
-                            OrderSide.SELL,
-                            activeStatuses
-                    );
-        }
-
-        return orderRepository
-                .findBySymbolIgnoreCaseAndSideAndStatusInOrderByPriceDescCreatedTimeAsc(
-                        incomingOrder.getSymbol(),
-                        OrderSide.BUY,
-                        activeStatuses
-                );
-    }
-
-    public boolean canMatch(Order incomingOrder, Order oppositeOrder) {
-
-        return isPriceMatch(incomingOrder, oppositeOrder);
-    }
-
-    private boolean isPriceMatch(Order incomingOrder, Order oppositeOrder) {
+        List<Order> matchingOrders;
 
         if (incomingOrder.getSide() == OrderSide.BUY) {
 
-            return incomingOrder.getPrice() >= oppositeOrder.getPrice();
+            matchingOrders =
+                    orderRepository
+                            .findBySymbolIgnoreCaseAndSideAndStatusInOrderByPriceAscCreatedTimeAscIdAsc(
+                                    incomingOrder.getSymbol(),
+                                    OrderSide.SELL,
+                                    activeStatuses
+                            );
+
+        } else {
+
+            matchingOrders =
+                    orderRepository
+                            .findBySymbolIgnoreCaseAndSideAndStatusInOrderByPriceDescCreatedTimeAscIdAsc(
+                                    incomingOrder.getSymbol(),
+                                    OrderSide.BUY,
+                                    activeStatuses
+                            );
         }
-        return incomingOrder.getPrice() <= oppositeOrder.getPrice();
+
+        /*
+         * Enforce price-time priority explicitly in Java as well.
+         *
+         * BUY:
+         *   Best SELL = lowest price first
+         *
+         * SELL:
+         *   Best BUY = highest price first
+         *
+         * If price and createdTime are equal,
+         * lower order ID wins as the deterministic FIFO fallback.
+         */
+        if (incomingOrder.getSide() == OrderSide.BUY) {
+
+            matchingOrders.sort(
+                    Comparator
+                            .comparing(Order::getPrice)
+                            .thenComparing(Order::getCreatedTime)
+                            .thenComparing(Order::getId)
+            );
+
+        } else {
+
+            matchingOrders.sort(
+                    Comparator
+                            .comparing(Order::getPrice)
+                            .reversed()
+                            .thenComparing(Order::getCreatedTime)
+                            .thenComparing(Order::getId)
+            );
+        }
+
+        return matchingOrders;
+
+    }
+
+    public boolean canMatch(
+            Order incomingOrder,
+            Order oppositeOrder) {
+
+        return isPriceMatch(
+                incomingOrder,
+                oppositeOrder
+        );
+    }
+
+    private boolean isPriceMatch(
+            Order incomingOrder,
+            Order oppositeOrder) {
+
+        if (incomingOrder.getSide() == OrderSide.BUY) {
+
+            return incomingOrder.getPrice()
+                    >= oppositeOrder.getPrice();
+        }
+
+        return incomingOrder.getPrice()
+                <= oppositeOrder.getPrice();
     }
 
     private int calculateMatchQuantity(
@@ -80,7 +132,10 @@ public class MatchingEngineService {
             Order incomingOrder,
             Order oppositeOrder) {
 
-        return calculateMatchQuantity(incomingOrder, oppositeOrder);
+        return calculateMatchQuantity(
+                incomingOrder,
+                oppositeOrder
+        );
     }
 
     private Trade createTrade(
@@ -92,9 +147,12 @@ public class MatchingEngineService {
         Order sellOrder;
 
         if (incomingOrder.getSide() == OrderSide.BUY) {
+
             buyOrder = incomingOrder;
             sellOrder = oppositeOrder;
+
         } else {
+
             buyOrder = oppositeOrder;
             sellOrder = incomingOrder;
         }
@@ -113,12 +171,18 @@ public class MatchingEngineService {
             Order incomingOrder,
             Order oppositeOrder) {
 
-        if (!isPriceMatch(incomingOrder, oppositeOrder)) {
+        if (!isPriceMatch(
+                incomingOrder,
+                oppositeOrder)) {
+
             return null;
         }
 
         int matchQuantity =
-                calculateMatchQuantity(incomingOrder, oppositeOrder);
+                calculateMatchQuantity(
+                        incomingOrder,
+                        oppositeOrder
+                );
 
         if (matchQuantity <= 0) {
             return null;
@@ -136,23 +200,35 @@ public class MatchingEngineService {
             int executedQuantity) {
 
         int remainingQuantity =
-                order.getQuantity() - executedQuantity;
+                order.getQuantity()
+                        - executedQuantity;
 
-        order.setQuantity(remainingQuantity);
+        order.setQuantity(
+                remainingQuantity
+        );
 
         if (remainingQuantity == 0) {
-            order.setStatus(OrderStatus.FILLED);
+
+            order.setStatus(
+                    OrderStatus.FILLED
+            );
+
         } else {
-            order.setStatus(OrderStatus.PARTIALLY_FILLED);
+
+            order.setStatus(
+                    OrderStatus.PARTIALLY_FILLED
+            );
         }
     }
-
 
     public Trade executeMatch(
             Order incomingOrder,
             Order oppositeOrder) {
 
-        if (!isPriceMatch(incomingOrder, oppositeOrder)) {
+        if (!isPriceMatch(
+                incomingOrder,
+                oppositeOrder)) {
+
             return null;
         }
 
@@ -172,8 +248,10 @@ public class MatchingEngineService {
                         oppositeOrder,
                         matchQuantity
                 );
+
         // Persist trade
         tradeRepository.save(trade);
+
         // Update remaining quantities and statuses
         updateOrderAfterTrade(
                 incomingOrder,
@@ -185,11 +263,16 @@ public class MatchingEngineService {
                 matchQuantity
         );
 
-// Persist updated orders
-        orderRepository.save(incomingOrder);
-        orderRepository.save(oppositeOrder);
+        // Persist updated orders
+        orderRepository.save(
+                incomingOrder
+        );
 
-// Persist status changes + audit history
+        orderRepository.save(
+                oppositeOrder
+        );
+
+        // Persist status changes + audit history
         statusService.updateStatus(
                 incomingOrder,
                 incomingOrder.getStatus()
@@ -202,5 +285,4 @@ public class MatchingEngineService {
 
         return trade;
     }
-
 }
